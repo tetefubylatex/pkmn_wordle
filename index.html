@@ -103,7 +103,7 @@ tr.sel td{background:color-mix(in srgb,var(--accent) 12%,transparent)}
 </div>
 <div class="pr">
 <div id="kb" aria-label="キーボード" style="display:flex;flex-direction:column;gap:10px"></div>
-<div class="tools"><button class="btn" id="del">1字消す</button><button class="btn p" id="go">決定</button><button class="btn" id="hint">ヒント（図鑑No.）</button></div>
+<div class="tools"><button class="btn" id="del">1字消す</button><button class="btn p" id="go">決定</button></div>
 <details class="card" style="gap:8px"><summary style="cursor:pointer;font-weight:700">遊び方</summary>
 <p class="mute">・マスは常に6つ。推測した名前の文字数ぶんだけ左から埋まります。<br>・緑＝その位置で一致、黄＝答えに含まれるが位置が違う、灰＝含まれない。答えより長い推測の余った文字は、位置が合わないので緑になりません。<br>・全部緑でも正解と出なければ、答えはその続きがある長い名前です（例：ミュウ→ミュウツー）。<br>・8回以内に当てれば勝ちです。文字は画面下のパネルをタップして入力します。</p></details>
 </div>
@@ -154,15 +154,15 @@ function fb(g,a){const m=g.length,r=Array(m).fill(0),rem={};
  return r}
 function toKata(s){return s.replace(/[\u3041-\u3096]/g,c=>String.fromCharCode(c.charCodeAt(0)+96)).replace(/[\uff21-\uff3a]/g,c=>String.fromCharCode(c.charCodeAt(0)-0xfee0)).replace(/z/g,'Z').replace(/:/g,'：')}
 /* ---------- あそぶ ---------- */
-let mode='daily',ans=null,guesses=[],cur=[],over=false,busy=false,hinted=false;
+let mode='daily',ans=null,guesses=[],cur=[],over=false,busy=false;
 const dayNum=()=>{const d=new Date();return Math.floor(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/864e5)};
 const KEY='pkw-hidden-daily';
-function save(){if(mode!=='daily')return;try{localStorage.setItem(KEY,JSON.stringify({d:dayNum(),g:guesses,h:hinted}))}catch(e){}}
+function save(){if(mode!=='daily')return;try{localStorage.setItem(KEY,JSON.stringify({d:dayNum(),g:guesses}))}catch(e){}}
 function load(){try{const s=JSON.parse(localStorage.getItem(KEY)||'null');if(s&&s.d===dayNum())return s}catch(e){}return null}
 function start(m){
- mode=m;guesses=[];cur=[];over=false;busy=false;hinted=false;$('res').hidden=true;msg('');
+ mode=m;guesses=[];cur=[];over=false;busy=false;$('res').hidden=true;msg('');
  ans=m==='daily'?ALL[(dayNum()*7919)%ALL.length]:ALL[Math.floor(Math.random()*ALL.length)];
- if(m==='daily'){const s=load();if(s){guesses=s.g;hinted=!!s.h;if(guesses.includes(ans[1])||guesses.length>=TRIES)over=true}}
+ if(m==='daily'){const s=load();if(s){guesses=s.g;if(guesses.includes(ans[1])||guesses.length>=TRIES)over=true}}
  $('m-daily').setAttribute('aria-pressed',m==='daily');$('m-rand').setAttribute('aria-pressed',m==='rand');
  $('info').textContent=TRIES+'回まで';
  render(false);if(over)finish(true);
@@ -181,7 +181,6 @@ function render(anim){
   rows+=h+'</div>';
  }
  $('board').innerHTML=rows;drawKb();
- $('hint').textContent=hinted?'図鑑No.'+String(ans[0]).padStart(4,'0'):'ヒント（図鑑No.）';
 }
 function status(){const st={};for(const g of guesses){const f=fb(g,ans[1]);for(let i=0;i<g.length;i++){const c=g[i];st[c]=Math.max(st[c]===undefined?-1:st[c],f[i])}}return st}
 function drawKb(){
@@ -204,7 +203,7 @@ function submit(){
  if(guesses.includes(g)){shake();msg('その名前はもう使っています','bad');return}
  guesses.push(g);cur=[];busy=true;save();render(true);
  const win=g===ans[1];
- setTimeout(()=>{busy=false;drawKb();if(win||guesses.length>=TRIES){over=true;finish(false,win)}},300+g.length*150+200);
+ setTimeout(()=>{busy=false;document.querySelectorAll('.tile.rev').forEach(x=>x.classList.remove('rev'));drawKb();if(win||guesses.length>=TRIES){over=true;finish(false,win)}},300+g.length*150+200);
 }
 function finish(restored,winArg){
  const win=restored?guesses.includes(ans[1]):winArg;
@@ -221,7 +220,6 @@ function finish(restored,winArg){
  };
 }
 $('go').onclick=submit;$('del').onclick=del;
-$('hint').onclick=()=>{if(over)return;hinted=true;save();$('hint').textContent='図鑑No.'+String(ans[0]).padStart(4,'0')};
 $('m-daily').onclick=()=>start('daily');$('m-rand').onclick=()=>start('rand');
 /* ---------- 攻略 ---------- */
 const TREE=D.tree;
