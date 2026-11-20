@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;700;900&display=swap">
 <style>
 html{color-scheme:light}body{margin:0}
-/* layout: 上部に「あそぶ/攻略」タブ。盤面は常に6マス幅で文字数は伏せる。判定色だけを主役にする */
+/* layout: 上部に「あそぶ/攻略ナビ」タブ。盤面は常に6マス幅で文字数は伏せる。判定色だけを主役にする */
 :root{--bg:#ffffff;--card:#ffffff;--fg:#1c2230;--mute:#667085;--line:#d3d8e1;--g:#3f9a5a;--y:#d2a31f;--x:#8a93a3;--key:#e3e7ee;--accent:#2457c5;--bad:#b42318;
 --font:"Zen Kaku Gothic New","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif}
 body{background:var(--bg);color:var(--fg);font-family:var(--font);padding-block:20px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));line-height:1.5;font-size:15px}
@@ -88,7 +88,7 @@ tr.sel td{background:color-mix(in srgb,var(--accent) 12%,transparent)}
 
 <div class="wrap">
 <header><h1>ポケモンWordle 全図鑑版</h1>
-<div class="seg" role="group" aria-label="画面"><button id="tp" aria-pressed="true">あそぶ</button><button id="ts" aria-pressed="false">攻略</button></div></header>
+<div class="seg" role="group" aria-label="画面"><button id="tp" aria-pressed="true">あそぶ</button><button id="ts" aria-pressed="false">攻略ナビ</button></div></header>
 
 <section id="play">
 <div class="sub full" style="margin-top:-6px;text-align:left">答えは全1025匹から出題。名前は2〜6文字のどれかで、文字数は非公開です。推測には、2〜6文字のどのポケモン名も使えます。</div>
