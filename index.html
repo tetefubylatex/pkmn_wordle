@@ -8,12 +8,28 @@
 <style>
 html{color-scheme:light}body{margin:0}
 /* layout: 上部に「あそぶ/攻略」タブ。盤面は常に6マス幅で文字数は伏せる。判定色だけを主役にする */
-:root{--bg:#f4f5f7;--card:#fff;--fg:#1c2230;--mute:#667085;--line:#cfd5df;--g:#3f9a5a;--y:#d2a31f;--x:#8a93a3;--key:#e3e7ee;--accent:#2457c5;--bad:#b42318;
+:root{--bg:#ffffff;--card:#ffffff;--fg:#1c2230;--mute:#667085;--line:#d3d8e1;--g:#3f9a5a;--y:#d2a31f;--x:#8a93a3;--key:#e3e7ee;--accent:#2457c5;--bad:#b42318;
 --font:"Zen Kaku Gothic New","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12151c;--card:#1a1f29;--fg:#e8ebf1;--mute:#98a1b3;--line:#3a4252;--g:#3f9a5a;--y:#b88f1a;--x:#566074;--key:#2a3140;--accent:#7ea3f2;--bad:#f0877c;color-scheme:dark}}
-:root[data-theme="dark"]{--bg:#12151c;--card:#1a1f29;--fg:#e8ebf1;--mute:#98a1b3;--line:#3a4252;--g:#3f9a5a;--y:#b88f1a;--x:#566074;--key:#2a3140;--accent:#7ea3f2;--bad:#f0877c;color-scheme:dark}
 body{background:var(--bg);color:var(--fg);font-family:var(--font);padding-block:20px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));line-height:1.5;font-size:15px}
-.wrap{max-width:460px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+.wrap{max-width:480px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+[hidden]{display:none!important}
+p,h1,h2{margin:0}details p{margin-top:8px}
+#play,#solve,.pl,.pr{display:flex;flex-direction:column;gap:14px;min-width:0}
+.row{grid-template-columns:repeat(6,minmax(0,var(--tw,56px)))}
+@media (min-width:900px){
+ .wrap{max-width:1080px;gap:20px}
+ body{padding-block:32px;font-size:16px}
+ h1{font-size:28px}
+ #play{display:grid;grid-template-columns:minmax(0,440px) minmax(0,1fr);column-gap:56px;row-gap:14px;align-items:start}
+ #play .full{grid-column:1/-1}
+ #play{--tw:62px}
+ .key{height:46px;font-size:18px}
+ .pr{max-width:560px}
+ #solve{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:start}
+ #solve>.card:first-child{grid-row:1 / span 2}
+ .cur button{width:56px;height:56px;font-size:24px}
+ .hist .t{width:40px;height:40px}
+}
 header{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
 h1{font-size:22px;font-weight:900;margin:0}
 h2{font-size:16px;font-weight:700;margin:0}
@@ -74,30 +90,28 @@ tr.sel td{background:color-mix(in srgb,var(--accent) 12%,transparent)}
 <header><h1>ポケモンWordle 全図鑑版</h1>
 <div class="seg" role="group" aria-label="画面"><button id="tp" aria-pressed="true">あそぶ</button><button id="ts" aria-pressed="false">攻略</button></div></header>
 
-<section id="play" style="display:flex;flex-direction:column;gap:14px">
-<div class="sub" style="margin-top:-6px">答えは全1025匹から出題。名前は2〜6文字のどれかで、文字数は非公開です。推測には、2〜6文字のどのポケモン名も使えます。</div>
-<div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:space-between;align-items:center">
+<section id="play">
+<div class="sub full" style="margin-top:-6px;text-align:left">答えは全1025匹から出題。名前は2〜6文字のどれかで、文字数は非公開です。推測には、2〜6文字のどのポケモン名も使えます。</div>
+<div class="full" style="display:flex;gap:8px;flex-wrap:wrap;justify-content:space-between;align-items:center">
  <div class="seg" role="group" aria-label="モード"><button id="m-daily" aria-pressed="true">今日の1匹</button><button id="m-rand" aria-pressed="false">ランダム</button></div>
  <span class="mute" id="info"></span>
 </div>
+<div class="pl">
 <div id="board" class="board" aria-label="盤面"></div>
 <div id="msg" class="msg" aria-live="polite"></div>
 <div id="res" hidden></div>
+</div>
+<div class="pr">
 <div id="kb" aria-label="キーボード" style="display:flex;flex-direction:column;gap:10px"></div>
 <div class="tools"><button class="btn" id="del">1字消す</button><button class="btn p" id="go">決定</button><button class="btn" id="hint">ヒント（図鑑No.）</button></div>
 <details class="card" style="gap:8px"><summary style="cursor:pointer;font-weight:700">遊び方</summary>
 <p class="mute">・マスは常に6つ。推測した名前の文字数ぶんだけ左から埋まります。<br>・緑＝その位置で一致、黄＝答えに含まれるが位置が違う、灰＝含まれない。答えより長い推測の余った文字は、位置が合わないので緑になりません。<br>・全部緑でも正解と出なければ、答えはその続きがある長い名前です（例：ミュウ→ミュウツー）。<br>・8回以内に当てれば勝ちです。文字は画面下のパネルをタップして入力します。</p></details>
+</div>
 </section>
 
-<section id="solve" style="display:none;flex-direction:column;gap:14px">
+<section id="solve" hidden>
 <div class="card">
- <h2>文字数を知らない場合の最適戦略</h2>
- <p class="mute">全1025匹を候補にして、結果の分かれ方が最も均等になる推測を選び続ける決定木を計算しました。推測は2〜6文字の全名前から選んでいます。</p>
- <div class="stats"><div><b id="st-first"></b><span class="mute">最適な初手</span></div><div><b id="st-avg"></b><span class="mute">平均手数</span></div><div><b id="st-mx"></b><span class="mute">最悪手数</span></div></div>
- <div class="tblbox"><table id="dist"><thead><tr><th>手数</th><th class="n">匹数</th><th class="n">累計割合</th></tr></thead><tbody></tbody></table></div>
-</div>
-<div class="card">
- <h2>実戦ソルバー</h2>
+ <h2>次の一手</h2>
  <p class="mute">ゲームに出た色に合わせてマスをタップ（灰→黄→緑）し、「決定」で次の手が出ます。正解したときは「正解！」を押してください。全部緑でも正解表示が出なければ、そのまま「決定」です。</p>
  <div id="shist" class="hist"></div>
  <div class="mute" id="slbl"></div>
@@ -111,6 +125,12 @@ tr.sel td{background:color-mix(in srgb,var(--accent) 12%,transparent)}
  <h2>2手目 早見表</h2>
  <p class="mute" id="t2cap"></p>
  <div class="tblbox" style="max-height:420px;overflow-y:auto"><table id="t2"><thead><tr><th>判定</th><th class="n">残り</th><th>2手目</th></tr></thead><tbody></tbody></table></div>
+</div>
+<div class="card">
+ <h2>最適戦略</h2>
+ <p class="mute">全1025匹を候補にして、結果の分かれ方が最も均等になる推測を選び続ける決定木を計算しました。推測は2〜6文字の全名前から選んでいます。</p>
+ <div class="stats"><div><b id="st-first"></b><span class="mute">最適な初手</span></div><div><b id="st-avg"></b><span class="mute">平均手数</span></div><div><b id="st-mx"></b><span class="mute">最悪手数</span></div></div>
+ <div class="tblbox"><table id="dist"><thead><tr><th>手数</th><th class="n">匹数</th><th class="n">累計割合</th></tr></thead><tbody></tbody></table></div>
 </div>
 </section>
 </div>
@@ -150,7 +170,7 @@ function start(m){
 function render(anim){
  let rows='';
  for(let r=0;r<TRIES;r++){
-  let h='<div class="row" id="r'+r+'" style="grid-template-columns:repeat('+MAXL+',minmax(0,56px))">';
+  let h='<div class="row" id="r'+r+'">';
   const g=r<guesses.length?guesses[r]:null,f=g?fb(g,ans[1]):null;
   for(let c=0;c<MAXL;c++){
    let ch='',cl='tile';
@@ -232,7 +252,7 @@ $('sok').onclick=()=>{
 $('swin').onclick=()=>{const m=$('smsg');m.className='msg ok';m.textContent='正解！ '+node[0]+' で'+(shist.length+1)+'手'};
 $('sundo').onclick=()=>{const s=sstack.pop();if(!s)return;shist.pop();node=s.node;scur=s.scur;$('smsg').textContent='';srender()};
 $('sreset').onclick=reset;
-function tab(t){$('play').style.display=t==='p'?'flex':'none';$('solve').style.display=t==='s'?'flex':'none';$('tp').setAttribute('aria-pressed',t==='p');$('ts').setAttribute('aria-pressed',t==='s')}
+function tab(t){$('play').hidden=t!=='p';$('solve').hidden=t!=='s';$('tp').setAttribute('aria-pressed',t==='p');$('ts').setAttribute('aria-pressed',t==='s')}
 $('tp').onclick=()=>tab('p');$('ts').onclick=()=>tab('s');
 reset();start('daily');
 </script>
