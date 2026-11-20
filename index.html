@@ -127,8 +127,8 @@ tr.sel td{background:color-mix(in srgb,var(--accent) 12%,transparent)}
  <div class="tblbox" style="max-height:420px;overflow-y:auto"><table id="t2"><thead><tr><th>判定</th><th class="n">残り</th><th>2手目</th></tr></thead><tbody></tbody></table></div>
 </div>
 <div class="card">
- <h2>最適戦略</h2>
- <p class="mute">全1025匹を候補にして、結果の分かれ方が最も均等になる推測を選び続ける決定木を計算しました。推測は2〜6文字の全名前から選んでいます。</p>
+ <h2>最適解</h2>
+ <p class="mute">全1025匹を候補にして、結果の分かれ方が最も均等になる推測を選び続けるポケモンを計算しました。推測は2〜6文字の全名前から選んでいます。</p>
  <div class="stats"><div><b id="st-first"></b><span class="mute">最適な初手</span></div><div><b id="st-avg"></b><span class="mute">平均手数</span></div><div><b id="st-mx"></b><span class="mute">最悪手数</span></div></div>
  <div class="tblbox"><table id="dist"><thead><tr><th>手数</th><th class="n">匹数</th><th class="n">累計割合</th></tr></thead><tbody></tbody></table></div>
 </div>
@@ -221,7 +221,7 @@ function finish(restored,winArg){
 }
 $('go').onclick=submit;$('del').onclick=del;
 $('m-daily').onclick=()=>start('daily');$('m-rand').onclick=()=>start('rand');
-/* ---------- 攻略 ---------- */
+/* ---------- 攻略ナビ ---------- */
 const TREE=D.tree;
 let node,shist,sstack,scur;
 function mini(k){return '<span class="mini">'+[...k].map(c=>'<i class="'+cls[c]+'"></i>').join('')+'</span>'}
