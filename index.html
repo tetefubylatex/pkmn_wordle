@@ -7,13 +7,13 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;700;900&display=swap">
 <style>
 html{color-scheme:light}body{margin:0}
-/* layout: 上部に「あそぶ/攻略ナビ」タブ。盤面は常に6マス幅で文字数は伏せる。判定色だけを主役にする */
+/* layout: 上部に「あそぶ/攻略」タブ。盤面は常に6マス幅で文字数は伏せる。判定色だけを主役にする */
 :root{--bg:#ffffff;--card:#ffffff;--fg:#1c2230;--mute:#667085;--line:#d3d8e1;--g:#3f9a5a;--y:#d2a31f;--x:#8a93a3;--key:#e3e7ee;--accent:#2457c5;--bad:#b42318;
 --font:"Zen Kaku Gothic New","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif}
 body{background:var(--bg);color:var(--fg);font-family:var(--font);padding-block:20px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));line-height:1.5;font-size:15px}
 .wrap{max-width:480px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
 [hidden]{display:none!important}
-p,h1,h2{margin:0}details p{margin-top:8px}
+p,h1,h2,h3{margin:0}.h3{font-size:14px;font-weight:700}details p{margin-top:8px}
 #play,#solve,.pl,.pr{display:flex;flex-direction:column;gap:14px;min-width:0}
 .row{grid-template-columns:repeat(6,minmax(0,var(--tw,56px)))}
 @media (min-width:900px){
@@ -88,7 +88,7 @@ tr.sel td{background:color-mix(in srgb,var(--accent) 12%,transparent)}
 
 <div class="wrap">
 <header><h1>ポケモンWordle 全図鑑版</h1>
-<div class="seg" role="group" aria-label="画面"><button id="tp" aria-pressed="true">あそぶ</button><button id="ts" aria-pressed="false">攻略ナビ</button></div></header>
+<div class="seg" role="group" aria-label="画面"><button id="tp" aria-pressed="true">あそぶ</button><button id="ts" aria-pressed="false">攻略ガイド</button></div></header>
 
 <section id="play">
 <div class="sub full" style="margin-top:-6px;text-align:left">答えは全1025匹から出題。名前は2〜6文字のどれかで、文字数は非公開です。推測には、2〜6文字のどのポケモン名も使えます。</div>
@@ -128,9 +128,11 @@ tr.sel td{background:color-mix(in srgb,var(--accent) 12%,transparent)}
 </div>
 <div class="card">
  <h2>最適解</h2>
- <p class="mute">全1025匹を候補にして、結果の分かれ方が最も均等になるポケモンを計算しました。推測は2〜6文字の全名前から選んでいます。</p>
+ <p class="mute">全1025匹を候補にして、結果の分かれ方が最も均等になるポケモンを計算しました。</p>
  <div class="stats"><div><b id="st-first"></b><span class="mute">最適な初手</span></div><div><b id="st-avg"></b><span class="mute">平均手数</span></div><div><b id="st-mx"></b><span class="mute">最悪手数</span></div></div>
- <div class="tblbox"><table id="dist"><thead><tr><th>手数</th><th class="n">匹数</th><th class="n">累計割合</th></tr></thead><tbody></tbody></table></div>
+ <h3 class="h3">平均手数が少ない初手</h3>
+ <div class="tblbox"><table id="rank"><thead><tr><th>順位</th><th>初手</th><th class="n">平均手数</th><th class="n">最悪手数</th></tr></thead><tbody></tbody></table></div>
+ <p class="mute">初手ごとに、2手目以降も毎回、候補がいちばん絞れる名前を選んで全1025匹を解いたときの、平均手数と最悪手数を比べました（対象は、初手だけで見て絞り込み力が高い上位80匹）。</p>
 </div>
 </section>
 </div>
@@ -221,12 +223,13 @@ function finish(restored,winArg){
 }
 $('go').onclick=submit;$('del').onclick=del;
 $('m-daily').onclick=()=>start('daily');$('m-rand').onclick=()=>start('rand');
-/* ---------- 攻略ナビ ---------- */
+/* ---------- 攻略 ---------- */
 const TREE=D.tree;
 let node,shist,sstack,scur;
 function mini(k){return '<span class="mini">'+[...k].map(c=>'<i class="'+cls[c]+'"></i>').join('')+'</span>'}
 $('st-first').textContent=D.first;$('st-avg').textContent=D.avg.toFixed(2);$('st-mx').textContent=D.mx;
-(function(){let acc=0;const tot=ALL.length;$('dist').tBodies[0].innerHTML=Object.entries(D.dist).map(([k,v])=>{acc+=v;return '<tr><td>'+k+'手</td><td class="n">'+v+'</td><td class="n">'+(acc/tot*100).toFixed(1)+'%</td></tr>'}).join('')})();
+const RANK=[["ストリンダー",4.0351,8],["マッシブーン",4.0566,8],["パッチルドン",4.0702,7],["ウオチルドン",4.0888,8],["ゴリランダー",4.0917,9],["ジュラルドン",4.0976,8],["イルカマン",4.1015,8],["ランクルス",4.1112,8],["ジーランス",4.1122,8],["バイウールー",4.1317,9]];
+$('rank').tBodies[0].innerHTML=RANK.map((r,i)=>'<tr><td>'+(i+1)+'位</td><td>'+r[0]+'</td><td class="n">'+r[1].toFixed(2)+'</td><td class="n">'+r[2]+'</td></tr>').join('');
 const rows2=Object.entries(TREE[2]).sort((a,b)=>b[1][1]-a[1][1]||a[0].localeCompare(b[0]));
 $('t2cap').textContent='初手「'+TREE[0]+'」の判定ごとの次の一手（残りが多い順・'+rows2.length+'通り）。灰=含まない、黄=位置違い、緑=一致。';
 $('t2').tBodies[0].innerHTML=rows2.map(([k,c])=>'<tr><td>'+mini(k)+'</td><td class="n">'+c[1]+'</td><td>'+c[0]+(c[1]===1?'（確定）':'')+'</td></tr>').join('');
