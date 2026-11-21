@@ -27,8 +27,10 @@ p,h1,h2,h3{margin:0}.h3{font-size:14px;font-weight:700}details p{margin-top:8px}
  .pr{max-width:560px}
  #solve{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:start}
  #solve>.card:first-child{grid-row:1 / span 2}
- .cur button{width:56px;height:56px;font-size:24px}
+ .cur{grid-auto-columns:minmax(0,56px)}
+ .cur button{font-size:24px}
  .hist .t{width:40px;height:40px}
+ .tools.g2{grid-template-columns:repeat(4,1fr)}
 }
 header{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
 h1{font-size:22px;font-weight:900;margin:0}
@@ -67,12 +69,15 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:12px}
 .mute{color:var(--mute);font-size:13px}
 .hist{display:flex;flex-direction:column;gap:6px}
-.hist .r{display:flex;gap:5px;align-items:center}
-.hist .t{width:36px;height:36px;border-radius:6px;display:grid;place-items:center;font-weight:900;color:#fff;font-size:16px}
+.hist .r{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center}
+.hist .ts{display:flex;gap:4px;flex:none}
+.hist .r .mute{white-space:nowrap;font-size:12px}
+.hist .t{width:34px;height:34px;border-radius:6px;display:grid;place-items:center;font-weight:900;color:#fff;font-size:16px}
 .cur button.s0{background:var(--x)}.cur button.s1{background:var(--y)}.cur button.s2{background:var(--g)}
 .t.s0{background:var(--x)}.t.s1{background:var(--y)}.t.s2{background:var(--g)}
-.cur{display:flex;gap:6px;flex-wrap:wrap}
-.cur button{width:50px;height:50px;border-radius:6px;border:0;font:inherit;font-size:21px;font-weight:900;color:#fff;cursor:pointer}
+.cur{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,50px);gap:6px;justify-content:start}
+.tools.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.cur button{width:100%;aspect-ratio:1;min-width:0;padding:0;border-radius:6px;border:0;font:inherit;font-size:clamp(17px,5.6vw,21px);line-height:1;font-weight:900;color:#fff;cursor:pointer}
 .tblbox{overflow-x:auto}
 table{border-collapse:collapse;width:100%;min-width:300px}
 th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);white-space:nowrap;font-size:14px}
@@ -117,14 +122,9 @@ tr.sel td{background:color-mix(in srgb,var(--accent) 12%,transparent)}
  <div class="mute" id="slbl"></div>
  <div class="cur" id="scur" role="group" aria-label="推測と判定"></div>
  <div class="mute" id="srem"></div>
- <div class="tools"><button class="btn p" id="sok">決定</button><button class="btn" id="swin">正解！</button><button class="btn" id="sundo">1手戻る</button><button class="btn" id="sreset">最初から</button></div>
+ <div class="tools g2"><button class="btn p" id="sok">決定</button><button class="btn" id="swin">正解！</button><button class="btn" id="sundo">1手戻る</button><button class="btn" id="sreset">最初から</button></div>
  <div class="msg" id="smsg" aria-live="polite"></div>
  <details id="cdet"><summary style="cursor:pointer;font-weight:700">残りの候補を見る</summary><p class="mute" id="clist" style="margin-top:8px"></p></details>
-</div>
-<div class="card">
- <h2>2手目 早見表</h2>
- <p class="mute" id="t2cap"></p>
- <div class="tblbox" style="max-height:420px;overflow-y:auto"><table id="t2"><thead><tr><th>判定</th><th class="n">残り</th><th>2手目</th></tr></thead><tbody></tbody></table></div>
 </div>
 <div class="card">
  <h2>最適解</h2>
@@ -133,6 +133,11 @@ tr.sel td{background:color-mix(in srgb,var(--accent) 12%,transparent)}
  <h3 class="h3">平均手数が少ないポケモン</h3>
  <div class="tblbox"><table id="rank"><thead><tr><th>順位</th><th>ポケモン名</th><th class="n">平均手数</th><th class="n">最多手数</th></tr></thead><tbody></tbody></table></div>
  <p class="mute">2手目以降も候補をいちばん絞れる名前を選択し続けた場合の、平均手数と最多手数を比較しました。</p>
+</div>
+<div class="card">
+ <h2>2手目 早見表</h2>
+ <p class="mute" id="t2cap"></p>
+ <div class="tblbox" style="max-height:420px;overflow-y:auto"><table id="t2"><thead><tr><th>判定</th><th class="n">残り</th><th>2手目</th></tr></thead><tbody></tbody></table></div>
 </div>
 </section>
 </div>
@@ -236,7 +241,7 @@ $('t2').tBodies[0].innerHTML=rows2.map(([k,c])=>'<tr><td>'+mini(k)+'</td><td cla
 function reset(){node=TREE;shist=[];sstack=[];scur=Array(node[0].length).fill(0);$('smsg').textContent='';srender()}
 function remaining(){const names=ALL.map(w=>w[1]);return names.filter(a=>shist.every(h=>{const f=fb(h.g,a).join('');return f===h.k&&a!==h.g}))}
 function srender(){
- $('shist').innerHTML=shist.map(h=>'<div class="r">'+[...h.g].map((ch,i)=>'<div class="t '+cls[h.k[i]]+'">'+ch+'</div>').join('')+'<span class="mute">残り'+h.rem+'匹→</span></div>').join('');
+ $('shist').innerHTML=shist.map(h=>'<div class="r"><div class="ts">'+[...h.g].map((ch,i)=>'<div class="t '+cls[h.k[i]]+'">'+ch+'</div>').join('')+'</div><span class="mute">残り'+h.rem+'匹→</span></div>').join('');
  $('slbl').textContent=(shist.length+1)+'手目'+(node.length===2&&node[1]===1?'（1匹に確定）':'');
  $('scur').innerHTML=[...node[0]].map((ch,i)=>'<button class="'+cls[scur[i]]+'" data-i="'+i+'" aria-label="'+ch+' '+['灰','黄','緑'][scur[i]]+'">'+ch+'</button>').join('');
  $('srem').textContent='この手の時点の候補: '+node[1]+'匹';
